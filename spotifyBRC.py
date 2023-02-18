@@ -4,6 +4,7 @@ import streamlit as st
 import bar_chart_race as bcr
 import base64
 import zipfile
+import ffmpeg
 st.set_page_config(
     page_title="Spotify Bar Race Chart",
     page_icon="spotifyIcon.ico",
