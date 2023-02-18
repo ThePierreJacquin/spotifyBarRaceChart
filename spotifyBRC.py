@@ -16,8 +16,7 @@ def process(df:pd.DataFrame)->pd.DataFrame:
     df =df.rename(columns={"ts":"date",
                     "master_metadata_track_name":"songs",
                     "master_metadata_album_artist_name":"artists"})
-    df["songs"] = df["songs"].str.replace('$$.', '',regex = True)
-    df["artists"] = df["artists"].str.replace('$$.', '',regex = True)
+    df = df.replace('\\$', '',regex=True)
     df = df.sort_values("date")
     return df
 
