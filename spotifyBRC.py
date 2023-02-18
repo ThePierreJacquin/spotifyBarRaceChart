@@ -40,7 +40,7 @@ def barRaceChart(df:pd.DataFrame,obj:str,bars:int,cmap:str):
                                         n_bars=bars,
                                         cmap=cmap,
                                         filter_column_colors=True,
-                                        title="My Spotify Bar Race Chart").data  
+                                        title="My Spotify Bar Race Chart") 
         start = html_str.find('base64,')+len('base64,')
         end = html_str.find('">')
 
