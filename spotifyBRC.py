@@ -103,9 +103,8 @@ else:
         
         timeframe_start,timeframe_end =  st.select_slider("What timeframe should I look at",df["date"],value=(df["date"].min(),df["date"].max()),format_func=lambda x: str(x)[:7].replace("-","/"))
         df = df[(df['date'] >= timeframe_start) & (df['date'] <= timeframe_end)]
-        left,right = st.columns([1,1])
-        right.write("temps de chargement ~" , 5*bars*(df["date"].max()-df["date"].min()).days/365, " secondes")
-        if left.form_submit_button("Load Video"):
+        st.write("temps de chargement ~" , 5*bars*(df["date"].max()-df["date"].min()).days/365, " secondes")
+        if st.form_submit_button("Load Video"):
             st.session_state.video = barRaceChart(df,obj,bars,cmap)
     if "video" in st.session_state:
         st.video(st.session_state.video)
