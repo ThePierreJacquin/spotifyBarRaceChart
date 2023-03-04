@@ -10,7 +10,7 @@ st.set_page_config(
     page_icon="spotifyIcon.ico",
 )
 
-@st.cache_data()
+
 def openZipFile()->pd.DataFrame:
     df = pd.DataFrame()
     with zipfile.ZipFile(st.session_state.file,"r") as z:
@@ -21,7 +21,7 @@ def openZipFile()->pd.DataFrame:
     df = df[~df["master_metadata_track_name"].isna()].reset_index()
     return df
 
-@st.cache_data()
+
 def process(df:pd.DataFrame)->pd.DataFrame:
     serie = df["ts"].apply(lambda x : str(x).split("T")[0][:7])
     timeSerie = serie.apply(lambda x: datetime(int(x.split("-")[0]),int(x.split("-")[1]),day=1))
@@ -34,7 +34,7 @@ def process(df:pd.DataFrame)->pd.DataFrame:
     df = df.sort_values("date")
     return df
 
-st.cache_data()
+
 def barRaceChart(df:pd.DataFrame,obj:str,bars:int,cmap:str):
     
     with st.spinner("Generating video ..."):
