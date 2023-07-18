@@ -8,11 +8,36 @@ import ffmpeg
 from streamlit_extras.colored_header import colored_header
 from streamlit_extras.metric_cards import style_metric_cards
 from streamlit_extras.mandatory_date_range import date_range_picker
+import hydralit_components as hc
+
 st.set_page_config(
     page_title="Spotify Bar Race Chart",
     page_icon="spotifyIcon.ico",
 )
-    
+
+# Custom CSS styles
+def set_theme():
+    st.markdown(
+        """
+        <style>
+        body {
+            color: #FFFFFF;                   /* Text color: white */
+            background-color: #191414;        /* Background color: black */
+        }
+        div.stButton > button:first-child {
+            background-color: #1DB954;        /* Button color: Spotify green */
+            color: #FFFFFF;                   /* Button text color: white */
+        }
+        div.stButton > button:hover {
+        border-color: #FFFFFF;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+# Call the custom theme function
+set_theme()  
 
 #Parse data from the spotify export
 @st.cache_data(ttl=600)
@@ -80,7 +105,7 @@ def loadSidebar(df:pd.DataFrame):
         left.metric("Differents artists",len(df["artists"].unique()))
         right.metric("Differents songs",len(df["songs"].unique()))
 
-        style_metric_cards(border_left_color="#1DB954")
+        style_metric_cards(border_left_color="#1DB954",background_color="#222222")
 
         left,right = st.columns([1,1])
         with left:
@@ -114,7 +139,9 @@ else:
     with st.form("Settings"):
         colored_header("Video parameters","Select the timeframe and choose the appearance of your chart","green-70")
         _,center,_ = st.columns([1,1,1])
-        obj = center.radio("What do you want to track :",["artists","songs"],horizontal=True)
+        with center:
+            obj = hc.option_bar([{"icon":"fa fa-users","label":"Artists"},{"icon":"fa fa-music","label":"Songs"}],"",horizontal_orientation=True,
+                                override_theme={"menu_background":"#1DB954"},)
         left,center,right = st.columns(3)
         bars = left.number_input("Number of bars to display :",5,15,10)
         cmap = center.selectbox("Color Palette :",['spring', 'summer', 'autumn', 'winter'])
@@ -126,7 +153,7 @@ else:
         
         left,right = st.columns([1,1])
         if st.form_submit_button("Load Video"):
-            st.session_state.video = barRaceChart(df,obj,bars,cmap)
+            st.session_state.video = barRaceChart(df,obj.lower(),bars,cmap)
             
     if "video" in st.session_state:
         st.video(st.session_state.video)
