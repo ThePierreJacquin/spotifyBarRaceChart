@@ -1,6 +1,6 @@
 [theme]
 primaryColor = "#1DB954"     # Spotify green
 backgroundColor = "#191414"  # Spotify black
-secondaryBackgroundColor = "#FFFFFF"  # White
+secondaryBackgroundColor = "#DDDDDD"  # White
 textColor = "#FFFFFF"        # White
 font = "sans serif"
