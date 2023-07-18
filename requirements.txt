@@ -3,3 +3,4 @@ streamlit_extras
 pandas
 bar_chart_race
 ffmpeg-python
+hydralit_components
