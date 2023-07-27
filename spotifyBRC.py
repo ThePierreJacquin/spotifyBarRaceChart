@@ -15,29 +15,16 @@ st.set_page_config(
     page_icon="spotifyIcon.ico",
 )
 
-# Custom CSS styles
-def set_theme():
-    st.markdown(
-        """
-        <style>
-        body {
-            color: #FFFFFF;                   /* Text color: white */
-            background-color: #191414;        /* Background color: black */
-        }
-        div.stButton > button:first-child {
-            background-color: #1DB954;        /* Button color: Spotify green */
-            color: #FFFFFF;                   /* Button text color: white */
-        }
-        div.stButton > button:hover {
-        border-color: #FFFFFF;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
-# Call the custom theme function
-set_theme()  
+st.markdown("""
+            <style>
+            .css-1xarl3l {
+                font-size: 0.75rem;
+                padding-bottom: 0.25rem;}
+            .css-jcmizx {
+                font-size: 0.25rem;}
+            </style>
+            """,
+            unsafe_allow_html=True)
 
 #Parse data from the spotify export
 def openZipFile()->pd.DataFrame:
@@ -74,16 +61,29 @@ def barRaceChart(df:pd.DataFrame,obj:str,bars:int,cmap:str)->str:
         objs = [ t[1] for t in df_top.value_counts().index]
         number = df_top.value_counts().values
 
-        df_listens = pd.DataFrame([dates,objs,number]).transpose()
-        df_BRC = df_listens.pivot(index=0,columns=1).fillna(0).cumsum()
+        df_listens = pd.DataFrame([dates,objs,number]).transpose().rename({0:"date",1:"name",2:"values"},axis=1)
+        df_BRC = pd.pivot(df_listens,values="values",index="date",columns="name").fillna(0).cumsum()
+        
         html_str = bcr.bar_chart_race(  df=df_BRC,
                                         filename=None,
                                         orientation='h',
                                         sort='desc',
                                         n_bars=bars,
                                         cmap=cmap,
+                                        period_label={'x': .98, 'y': .1, 'ha': 'right', 'va': 'center',"size":18}, 
+                                        period_fmt='%B %Y', 
+                                        period_summary_func=lambda v, r: {'x': .98, 'y': .14, 
+                                          's': f'Total listens: {v.sum():,.0f}', 
+                                          'ha': 'right', 'size': 10}, 
+                                        steps_per_period=20,
                                         filter_column_colors=True,
-                                        title="My Spotify Bar Race Chart")
+                                        bar_kwargs={'alpha': .7},
+                                        figsize=(5, 5),
+                                        dpi=144,
+                                        title="My Spotify Bar Race Chart",
+                                        title_size="smaller",
+                                        shared_fontdict={'family': 'Impact', 'weight': 'bold',
+                                                        'color': 'rebeccapurple'})
         start = html_str.find('base64,')+len('base64,')
         end = html_str.find('">')
 
@@ -93,26 +93,35 @@ def barRaceChart(df:pd.DataFrame,obj:str,bars:int,cmap:str)->str:
 #Load basic stats on the sidebar
 def loadSidebar(df:pd.DataFrame):
     with st.sidebar:
-        colored_header("All-Time Statistics","general statistics about your account","green-70")
+        colored_header("All-Time Statistics","General statistics about your account","green-70")
+        style_metric_cards(border_left_color="#1DB954",background_color="#191414")
+        with st.expander("All-around stats",True):
+            left,right = st.columns([1,1])
+            left.metric("Number of plays",len(df))
+            right.metric("Period (days)",(df["date"].max()-df["date"].min()).days)
+
+            left.metric("Differents artists",len(df["artists"].unique()))
+            right.metric("Differents songs",len(df["songs"].unique()))
+            
 
         left,right = st.columns([1,1])
-        left.metric("Number of plays",len(df))
-        right.metric("Period (days)",(df["date"].max()-df["date"].min()).days)
-
-        left.metric("Differents artists",len(df["artists"].unique()))
-        right.metric("Differents songs",len(df["songs"].unique()))
-
-        style_metric_cards(border_left_color="#1DB954",background_color="#222222")
-
-        left,right = st.columns([1,1])
-        with left:
+        with left,st.form(key="left"):
             colored_header("Top 10 artists","Your Top 10 most listened artists","green-70")
-            artist10 = df["artists"].value_counts()[:10].to_frame().rename(columns={"artists":"Plays"})
-            st.table(artist10)
-        with right:
+            artist10 = df["artists"].value_counts().reset_index()
+            for rank,row in artist10[:10].iterrows():
+                st.metric(str(rank+1)+ "# - " +str(row["index"]),str(row["artists"])+" listens")
+            if st.form_submit_button("Show full rankings"):
+                artist10.rename({"index":"Artists","artists":"listens"},inplace=True,axis=1)
+                st.dataframe(artist10,use_container_width=True)
+
+        with right,st.form(key="right"):
             colored_header("Top 10 songs","Your Top 10 most listened songs","green-70")
-            songs10 = df["songs"].value_counts()[:10].to_frame().rename(columns={0:"Plays"})
-            st.table(songs10)
+            songs10 = df["songs"].value_counts().reset_index()
+            for rank,row in songs10[:10].iterrows():
+                st.metric(str(rank+1)+ "# - " +str(row["index"]),str(row["songs"])+" listens")
+            if st.form_submit_button("Show full rankings"):
+                songs10.rename({"index":"Songs","songs":"listens"},inplace=True,axis=1)
+                st.dataframe(songs10,use_container_width=True)
     return None
 
 #Landing page
@@ -134,7 +143,7 @@ else:
         df = st.session_state.df = process(data)
     else:
         df = st.session_state.df
-
+        
     loadSidebar(df)
 
     with st.form("Settings"):
@@ -145,15 +154,15 @@ else:
                                 override_theme={"menu_background":"#1DB954"},)
         left,center,right = st.columns(3)
         bars = left.number_input("Number of bars to display :",5,15,10)
-        cmap = center.selectbox("Color Palette :",['spring', 'summer', 'autumn', 'winter'])
+        cmap = center.selectbox("Color Palette :",['Dark24', 'Light24'],format_func=lambda x:x[:-2])
         with right:
             timeframe_start,timeframe_end = date_range_picker("What timeframe should I look at",df["date"].min(),df["date"].max())
         timeframe_start = datetime.combine(timeframe_start,datetime.min.time())
         timeframe_end = datetime.combine(timeframe_end,datetime.max.time())
         df = df[(df['date'] >= timeframe_start) & (df['date'] <= timeframe_end)]
         
-        left,right = st.columns([1,1])
-        if st.form_submit_button("Load Video"):
+        left,right = st.columns([5,1])
+        if right.form_submit_button("Load Video"):
             st.session_state.video = barRaceChart(df,obj.lower(),bars,cmap)
             
     if "video" in st.session_state:
