@@ -40,7 +40,6 @@ def set_theme():
 set_theme()  
 
 #Parse data from the spotify export
-@st.cache_data(ttl=600)
 def openZipFile()->pd.DataFrame:
     df = pd.DataFrame()
     with zipfile.ZipFile(st.session_state.file,"r") as z:
@@ -52,7 +51,6 @@ def openZipFile()->pd.DataFrame:
     return df
 
 #Pre Process the data
-@st.cache_data(ttl=600)
 def process(df:pd.DataFrame)->pd.DataFrame:
     serie = df["ts"].apply(lambda x : str(x).split("T")[0][:7])
     timeSerie = serie.apply(lambda x: datetime(int(x.split("-")[0]),int(x.split("-")[1]),day=1))
@@ -66,7 +64,6 @@ def process(df:pd.DataFrame)->pd.DataFrame:
     return df
 
 #Run the bar race chart with adequate parameters
-st.cache_data()
 def barRaceChart(df:pd.DataFrame,obj:str,bars:int,cmap:str)->str:
     
     with st.spinner("Generating video ..."):
@@ -132,8 +129,12 @@ if st.session_state.file is None:
 
 #Main function, ask for parameters then run the bar race chart and display it
 else:
-    data = openZipFile()
-    df = process(data)
+    if "df" not in st.session_state:
+        data = openZipFile()
+        df = st.session_state.df = process(data)
+    else:
+        df = st.session_state.df
+
     loadSidebar(df)
 
     with st.form("Settings"):
