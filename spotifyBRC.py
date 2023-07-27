@@ -90,6 +90,19 @@ def barRaceChart(df:pd.DataFrame,obj:str,bars:int,cmap:str)->str:
         video = base64.b64decode(html_str[start:end])
     return (video)
 
+def format_number_with_space(number):
+    # Convert the number to a string
+    number_str = str(number)
+
+    # Insert spaces between every three digits from the right
+    formatted_number = ""
+    for i, digit in enumerate(reversed(number_str)):
+        if i > 0 and i % 3 == 0:
+            formatted_number = " " + formatted_number
+        formatted_number = digit + formatted_number
+
+    return formatted_number
+
 #Load basic stats on the sidebar
 def loadSidebar(df:pd.DataFrame):
     with st.sidebar:
@@ -97,11 +110,11 @@ def loadSidebar(df:pd.DataFrame):
         style_metric_cards(border_left_color="#1DB954",background_color="#191414")
         with st.expander("All-around stats",True):
             left,right = st.columns([1,1])
-            left.metric("Number of plays",len(df))
-            right.metric("Period (days)",(df["date"].max()-df["date"].min()).days)
+            left.metric("Number of plays",format_number_with_space(len(df)))
+            right.metric("Period (days)",format_number_with_space((df["date"].max()-df["date"].min()).days))
 
-            left.metric("Differents artists",len(df["artists"].unique()))
-            right.metric("Differents songs",len(df["songs"].unique()))
+            left.metric("Differents artists",format_number_with_space(len(df["artists"].unique())))
+            right.metric("Differents songs",format_number_with_space(len(df["songs"].unique())))
             
 
         left,right = st.columns([1,1])
@@ -109,7 +122,7 @@ def loadSidebar(df:pd.DataFrame):
             colored_header("Top 10 artists","Your Top 10 most listened artists","green-70")
             artist10 = df["artists"].value_counts().reset_index()
             for rank,row in artist10[:10].iterrows():
-                st.metric(str(rank+1)+ "# - " +str(row["index"]),str(row["artists"])+" listens")
+                st.metric(str(rank+1)+ "# - " +str(row[0]),str(format_number_with_space(row[1])) +" listens")
             if st.form_submit_button("Show full rankings"):
                 artist10.rename({"index":"Artists","artists":"listens"},inplace=True,axis=1)
                 st.dataframe(artist10,use_container_width=True)
@@ -118,7 +131,7 @@ def loadSidebar(df:pd.DataFrame):
             colored_header("Top 10 songs","Your Top 10 most listened songs","green-70")
             songs10 = df["songs"].value_counts().reset_index()
             for rank,row in songs10[:10].iterrows():
-                st.metric(str(rank+1)+ "# - " +str(row["index"]),str(row["songs"])+" listens")
+                st.metric(str(rank+1)+ "# - " +str(row[0]),str(format_number_with_space(row[1])) +" listens")
             if st.form_submit_button("Show full rankings"):
                 songs10.rename({"index":"Songs","songs":"listens"},inplace=True,axis=1)
                 st.dataframe(songs10,use_container_width=True)
