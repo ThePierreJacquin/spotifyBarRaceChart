@@ -83,7 +83,7 @@ def barRaceChart(df:pd.DataFrame,obj:str,bars:int,cmap:str)->str:
                                         title="My Spotify Bar Race Chart",
                                         title_size="smaller",
                                         shared_fontdict={'family': 'Impact', 'weight': 'bold',
-                                                        'color': 'rebeccapurple'})
+                                                        'color': 'black'})
         start = html_str.find('base64,')+len('base64,')
         end = html_str.find('">')
 
