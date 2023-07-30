@@ -169,7 +169,7 @@ else:
         bars = left.number_input("Number of bars to display :",5,15,10)
         cmap = center.selectbox("Color Palette :",['Dark24', 'Light24'],format_func=lambda x:x[:-2])
         with right:
-            timeframe_start,timeframe_end = date_range_picker("What timeframe should I look at",df["date"].min(),df["date"].max())
+            timeframe_start,timeframe_end = date_range_picker("What timeframe should I look at",df["date"].min(),df["date"].max(),min_date=df["date"].min(),max_date=df["date"].max())
         timeframe_start = datetime.combine(timeframe_start,datetime.min.time())
         timeframe_end = datetime.combine(timeframe_end,datetime.max.time())
         df = df[(df['date'] >= timeframe_start) & (df['date'] <= timeframe_end)]
