@@ -31,7 +31,7 @@ def openZipFile()->pd.DataFrame:
     df = pd.DataFrame()
     with zipfile.ZipFile(st.session_state.file,"r") as z:
         for file in z.namelist():
-            if file.startswith("MyData/endsong"):
+            if file.endswith(".json"):
                 json = pd.read_json(z.open(file))
                 df = pd.concat([df,json])
     df = df[~df["master_metadata_track_name"].isna()].reset_index()
